@@ -36,7 +36,328 @@
      This box is empty on purpose. In Part 7 you paste an interactive
      graphic BETWEEN the opening <div> and the closing </div> below.
      ===================================================================== -->
-<div class="showcase"></div>
+<div class="showcase">
+  
+<!-- HTML: Displays three bouncing roommate names and an interactive fun fact box. -->
+<div class="roommate-stage">
+  <div class="roommate-title">MEET THE ROOMMATES</div>
+  <div class="roommate-subtitle">
+    Click a bouncing name to discover a fun fact!
+  </div>
+
+  <div class="roommate-arena">
+    <button type="button" class="roommate-name" data-id="0">
+      ROOMMATE 1
+    </button>
+    <button type="button" class="roommate-name" data-id="1">
+      ROOMMATE 2
+    </button>
+    <button type="button" class="roommate-name" data-id="2">
+      ROOMMATE 3
+    </button>
+  </div>
+
+  <div class="roommate-fact" aria-live="polite">
+    <div class="fact-heading">THE ROOMMATE FILES</div>
+    <div class="fact-message">
+      Choose a name to reveal a fun fact!
+    </div>
+  </div>
+</div>
+
+<!-- CSS: Uses the Biome font, red-and-white branding, and a mobile-friendly layout. -->
+<style>
+  .showcase .roommate-stage {
+    width: 100%;
+    max-width: 900px;
+    height: 440px;
+    margin: 0 auto;
+    padding: 18px;
+    box-sizing: border-box;
+    background: #9c1618;
+    color: #FFFFFF;
+    border-radius: 18px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    font-family: 'BiomeW04-SemiBoldWide', cursive;
+  }
+
+  .showcase .roommate-stage * {
+    box-sizing: border-box;
+  }
+
+  .showcase .roommate-title {
+    font-size: clamp(19px, 5vw, 30px);
+    font-weight: bold;
+    letter-spacing: 1px;
+    line-height: 1.3;
+  }
+
+  .showcase .roommate-subtitle {
+    font-size: clamp(10px, 2.5vw, 13px);
+    margin-top: 8px;
+    opacity: 0.9;
+    line-height: 1.5;
+  }
+
+  .showcase .roommate-arena {
+    position: relative;
+    flex: 1;
+    min-height: 130px;
+    width: 100%;
+    margin: 15px 0;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 15px;
+    background: rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+
+  .showcase .roommate-name {
+    position: absolute;
+    top: 0;
+    left: 0;
+    max-width: 48%;
+    padding: 11px 13px;
+    border: 2px solid #FFFFFF;
+    border-radius: 30px;
+    background: #FFFFFF;
+    color: #9c1618;
+    font-family: 'BiomeW04-SemiBoldWide', cursive;
+    font-size: clamp(10px, 2.7vw, 15px);
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    will-change: transform;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .showcase .roommate-name:hover {
+    background: #9c1618;
+    color: #FFFFFF;
+  }
+
+  .showcase .roommate-name:focus-visible {
+    outline: 3px solid #FFFFFF;
+    outline-offset: 3px;
+  }
+
+  .showcase .roommate-name.active {
+    background: #9c1618;
+    color: #FFFFFF;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+  }
+
+  .showcase .roommate-fact {
+    width: 100%;
+    min-height: 90px;
+    padding: 14px;
+    border-radius: 12px;
+    background: #FFFFFF;
+    color: #9c1618;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .showcase .fact-heading {
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+
+  .showcase .fact-message {
+    font-size: clamp(12px, 3vw, 16px);
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+</style>
+
+<!-- JavaScript: Makes the names bounce around and displays a fun fact when clicked. -->
+<script>
+(function () {
+  const script = document.currentScript;
+  const showcase = script.closest('.showcase');
+
+  if (!showcase) return;
+
+  const arena = showcase.querySelector('.roommate-arena');
+  const buttons = Array.from(
+    showcase.querySelectorAll('.roommate-name')
+  );
+  const factHeading = showcase.querySelector('.fact-heading');
+  const factMessage = showcase.querySelector('.fact-message');
+
+  const roommates = [
+    {
+      name: "Adrian",
+      fact: "I'm Louie's cousin but I'm chopped!"
+    },
+    {
+      name: "Anselmo",
+      fact: "I don't have a favorite food because I eat everything!"
+    },
+    {
+      name: "Louie",
+      fact: "I'm the unofficial janitor of the apartment!"
+    }
+  ];
+
+  const movers = [];
+  const startingX = [0.08, 0.55, 0.28];
+  const startingY = [0.15, 0.45, 0.78];
+
+  buttons.forEach(function (button, index) {
+    button.textContent = roommates[index].name;
+
+    const mover = {
+      element: button,
+      x: 0,
+      y: 0,
+      vx: [75, -95, 85][index],
+      vy: [65, 80, -70][index]
+    };
+
+    movers.push(mover);
+
+    button.addEventListener('click', function () {
+      buttons.forEach(function (otherButton) {
+        otherButton.classList.remove('active');
+      });
+
+      button.classList.add('active');
+
+      factHeading.textContent =
+        roommates[index].name.toUpperCase();
+
+      factMessage.textContent = roommates[index].fact;
+
+      if (factMessage.animate) {
+        factMessage.animate(
+          [
+            { opacity: 0, transform: 'scale(0.9)' },
+            { opacity: 1, transform: 'scale(1)' }
+          ],
+          {
+            duration: 300,
+            easing: 'ease-out'
+          }
+        );
+      }
+    });
+  });
+
+  function getBounds(mover) {
+    return {
+      maxX: Math.max(
+        0,
+        arena.clientWidth - mover.element.offsetWidth
+      ),
+      maxY: Math.max(
+        0,
+        arena.clientHeight - mover.element.offsetHeight
+      )
+    };
+  }
+
+  function draw(mover) {
+    mover.element.style.transform =
+      'translate3d(' +
+      mover.x + 'px, ' +
+      mover.y + 'px, 0)';
+  }
+
+  movers.forEach(function (mover, index) {
+    const bounds = getBounds(mover);
+
+    mover.x = bounds.maxX * startingX[index];
+    mover.y = bounds.maxY * startingY[index];
+
+    draw(mover);
+  });
+
+  let previousTime = null;
+
+  function moveNames(time) {
+    if (previousTime === null) {
+      previousTime = time;
+    }
+
+    const elapsed = Math.min(
+      (time - previousTime) / 1000,
+      0.05
+    );
+
+    previousTime = time;
+
+    movers.forEach(function (mover) {
+      const bounds = getBounds(mover);
+
+      mover.x += mover.vx * elapsed;
+      mover.y += mover.vy * elapsed;
+
+      if (mover.x <= 0) {
+        mover.x = 0;
+        mover.vx = Math.abs(mover.vx);
+      }
+
+      if (mover.x >= bounds.maxX) {
+        mover.x = bounds.maxX;
+        mover.vx = -Math.abs(mover.vx);
+      }
+
+      if (mover.y <= 0) {
+        mover.y = 0;
+        mover.vy = Math.abs(mover.vy);
+      }
+
+      if (mover.y >= bounds.maxY) {
+        mover.y = bounds.maxY;
+        mover.vy = -Math.abs(mover.vy);
+      }
+
+      draw(mover);
+    });
+
+    requestAnimationFrame(moveNames);
+  }
+
+  const reducedMotion = window.matchMedia(
+    '(prefers-reduced-motion: reduce)'
+  ).matches;
+
+  if (!reducedMotion) {
+    requestAnimationFrame(moveNames);
+  }
+
+  window.addEventListener('resize', function () {
+    movers.forEach(function (mover) {
+      const bounds = getBounds(mover);
+
+      mover.x = Math.max(
+        0,
+        Math.min(mover.x, bounds.maxX)
+      );
+
+      mover.y = Math.max(
+        0,
+        Math.min(mover.y, bounds.maxY)
+      );
+
+      draw(mover);
+    });
+  });
+})();
+</script>
+</div>
 
 <!-- Footer: fill in your name -->
 <footer>Built by Louie Gatica &middot; BMIS 235 <a href="https://www.gonzaga.edu">Gonzaga</a></footer>
